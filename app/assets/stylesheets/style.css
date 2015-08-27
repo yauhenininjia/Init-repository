@@ -1,0 +1,47 @@
+body{
+	color: #FF0000;
+	background: url(<%= assets_path 'white.jpg' %>) center top  #141415;
+	margin: 10px;
+}
+
+#container {
+	border: 1px solid black; 
+	width: 800px; 
+	height: 600px;
+	margin-left: 10px;
+	margin-top: 10px;
+}
+
+#formWrapper {
+	border: 1px solid black; 
+	position: relative; 
+	margin-left: 76%; 
+	margin-right: 10px;
+	margin-top: -44.6%;
+}
+
+#results {
+	position: relative;
+	margin-top: 33%;
+	border: 1px solid black; 
+}
+
+a#a {
+	text-decoration: none;
+	color: white;
+}
+
+
+
+#desaturation, #contrast {
+	margin-left: 10px;
+}
+
+.buttons {
+	position: relative; 
+	margin-left: 76%; 
+}
+
+#btn {
+	text-decoration: none;
+}

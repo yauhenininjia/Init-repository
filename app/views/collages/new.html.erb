@@ -1,0 +1,77 @@
+<div id = "container" ondrop = "drop()" ondragover="allowDrop(event)" onclick = "layer.draw(); enableSettings();"></div>
+	<div id = "formWrapper">
+		<form id = "form">
+			
+			<input id = 'number' type = hidden min = 0 value = 0> <br>
+		
+			<div class="control-group">
+				<label class="control-label" for="x">X</label>
+				<div class="controls">
+					<input disabled type="number" id="x" min = 0 value = 0 onclick = "setPhotoSettings(form)">
+				</div>
+			 </div>
+			 
+			<div class="control-group">
+				<label class="control-label" for="inputPassword">Y</label>
+				<div class="controls">
+					<input disabled type="number" id="y" min = 0 value = 0 onclick = "setPhotoSettings(form)">
+				</div>
+			 </div>
+			
+			<label for = 'height'>Height</label>
+			<input disabled id = 'height' type = number min = 0 value = 0 onclick = "setPhotoSettings(form)"> <br>
+			
+			<label for = 'width'>Width</label>
+			<input disabled id = 'width' type = number min = 0 value = 0 onclick = "setPhotoSettings(form)"> <br>
+			
+			<label for = 'degrees'>Rotation Degrees</label>
+			<input disabled id = 'degrees' type = number max = 180 min = 0 value = 0 onclick = "setPhotoSettings(form)"> <br>
+			
+			<label for = 'z'>z-index</label>
+			<input disabled id = 'z' type = number value = 0 onclick = "setPhotoSettings(form)"> <br>
+			
+			
+			
+			<div class="checkbox">
+			  <label><input disabled  id = 'sepia' type="checkbox" value="" onclick = "setPhotoSettings(form)">Sepia</label>
+			</div>
+			
+			<input disabled id = 'desaturation' type = range min = 0 max = 1 step = 0.1 value = 0 onclick = "setPhotoSettings(form)"> Desaturation
+			<input disabled id = 'contrast' type = range min = -255 max = 255 step = 1 value = 0 onclick = "setPhotoSettings(form)"> Contrast
+			
+			<input disabled id = 'submit' class = 'btn btn-success btn-xs buttons' type = button value = 'Submit' onclick = "setPhotoSettings(form); disableSettings();">
+			<input disabled id = 'remove' class = 'btn btn-success btn-xs buttons' type = button value = 'Remove' onclick = "removeGroup(form.number.value); disableSettings();">
+			
+		</form>
+	</div>
+	
+	
+	
+
+	<br>
+	<button class="btn btn-success btn-lg buttons"  type="button"  id="button">Fetch Photos from Flickr</button>
+	<br><br>
+	<button class = 'btn btn-success btn-lg buttons' id = 'btn' type = button value = "" onclick = "save();">
+		<a id = 'a' download>Download Collage</a>
+	</button>
+	<br><br>
+	<button class = 'btn btn-success btn-lg buttons' id = "create" value = "Create"  onclick = "send()">Save Collage</button>
+	
+
+	<div id="filterContainer">
+		<ul class="filters" id = "results">
+		</ul>
+	</div>
+
+	<script>
+		var width = 800/*window.innerWidth*/;
+		var height = 600/*window.innerHeight*/;
+		var stage = new Konva.Stage({
+			container: 'container',
+			width: width,
+			height: height
+		});
+		
+		var layer = new Konva.Layer();
+		stage.add(layer);
+	</script>

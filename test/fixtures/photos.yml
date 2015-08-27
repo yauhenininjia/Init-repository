@@ -1,0 +1,27 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  src: MyText
+  x: 1
+  'y': 1
+  width: 1
+  height: 1
+  degree: 1
+  z: 1
+  sepia: false
+  desaturate: 1.5
+  contrast: 1
+  collage_id: 
+
+two:
+  src: MyText
+  x: 1
+  'y': 1
+  width: 1
+  height: 1
+  degree: 1
+  z: 1
+  sepia: false
+  desaturate: 1.5
+  contrast: 1
+  collage_id: 

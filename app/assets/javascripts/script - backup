@@ -1,0 +1,384 @@
+var apiurl,myresult,apiurl_size,selected_size = 640, id = 0;
+apiurl = "https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=e399afd03ac0bfada1e71cf10273c4e1&per_page=10000&format=json&nojsoncallback=1";
+
+$(document).ready(function(){
+$('#button').click(function(){
+$("#results").html('');
+localStorage.clear();
+$.getJSON(apiurl,function(json){
+$.each(json.photos.photo,function(i,myresult){
+apiurl_size = "https://api.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=e399afd03ac0bfada1e71cf10273c4e1&photo_id="+myresult.id+"&format=json&nojsoncallback=1";
+$.getJSON(apiurl_size,function(size){
+$.each(size.sizes.size,function(i,myresult_size){
+if(myresult_size.width==selected_size){
+//$("#results").append('<p><a href="'+myresult_size.url+'" target="_blank"><img src="'+myresult_size.source+'" draggable="true" ondragstart = "drag(this)"/></a></p>');
+
+var img = new Image();
+img.setAttribute('crossOrigin', 'anonymous');
+img.src = myresult_size.source;
+img.onload = function () {
+	var canvas = document.createElement('canvas');
+	canvas.setAttribute('style', 'display: none');
+	
+	//document.body.appendChild(canvas);
+	canvas.width = img.width;
+	canvas.height = img.height;
+	var context = canvas.getContext('2d');
+	context.drawImage(img, 0, 0);
+	
+	localStorage.setItem(id, canvas.toDataURL("image\png"));
+	var image = new Image();
+	//image.setAttribute('crossOrigin', 'anonymous');
+	image.src = localStorage.getItem(id);
+	image.setAttribute('id', id);
+	image.setAttribute('dragable', 'true');
+	image.setAttribute('ondragstart', 'drag(this)');
+	//console.log(image.src);
+	delete canvas; delete context;
+	
+	$("#results").append('<li><a href="'+myresult_size.url+'" target="_blank" class = "thumbnail" onclick = "return false;"><img id = "'+ id++ +'" src="'+image.src+'" draggable="true" ondragstart = "drag(this)" onclick = "enableFilters(); getFilters(this)"/></a></li>');
+}
+
+
+}
+})
+})
+});
+});
+});
+});
+
+
+
+function drag(img) {
+	dropingImage = new Image();
+	dropingImage.src = img.src;
+}
+
+function drop() {
+	drawImage(dropingImage);
+	delete dropingImage;
+}
+
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+
+
+
+function save () {
+        var dataURL = stage.toDataURL("image/png;base64;");
+        //window.open(dataURL);
+		$('#a').attr('href', dataURL);
+    }
+	
+function dropImages() {
+	var container = document.getElementById('container');
+		FileReaderJS.setupDrop(container, {
+  readAsDefault: "DataURL",
+  on: {
+    load: function(e, file) {
+      var img = new Image();
+      img.onload = function() {
+        drawImage(img);
+      };
+      img.src = e.target.result;
+    }
+  }
+});
+}
+	
+function update(activeAnchor) {
+        var group = activeAnchor.getParent();
+
+        var topLeft = group.get('.topLeft')[0];
+        var topRight = group.get('.topRight')[0];
+        var bottomRight = group.get('.bottomRight')[0];
+        var bottomLeft = group.get('.bottomLeft')[0];
+        var image = group.get('Image')[0];
+
+        var anchorX = activeAnchor.getX();
+        var anchorY = activeAnchor.getY();
+
+        // update anchor positions
+        switch (activeAnchor.getName()) {
+            case 'topLeft':
+                topRight.setY(anchorY);
+                bottomLeft.setX(anchorX);
+                break;
+            case 'topRight':
+                topLeft.setY(anchorY);
+                bottomRight.setX(anchorX);
+                break;
+            case 'bottomRight':
+                bottomLeft.setY(anchorY);
+                topRight.setX(anchorX);
+                break;
+            case 'bottomLeft':
+                bottomRight.setY(anchorY);
+                topLeft.setX(anchorX);
+                break;
+        }
+
+        image.position(topLeft.position());
+
+        var width = topRight.getX() - topLeft.getX();
+        var height = bottomLeft.getY() - topLeft.getY();
+        if(width && height) {
+            image.width(width);
+            image.height(height);
+        }
+    }
+    function addAnchor(group, x, y, name) {
+        var stage = group.getStage();
+        var layer = group.getLayer();
+
+        var anchor = new Konva.Circle({
+            x: x,
+            y: y,
+            stroke: '#fff',
+            fill: '#fff0',
+            strokeWidth: 1,
+            radius: 1,
+            name: name,
+            draggable: true,
+            dragOnTop: false
+        });
+
+        anchor.on('dragmove', function() {
+            
+			update(this);
+			group = getPhotoSettings(group)
+			layer.draw();
+        });
+        anchor.on('mousedown touchstart', function() {
+			
+            group.setDraggable(false);
+            this.moveToTop();
+        });
+        anchor.on('dragend', function() {
+			
+            group.setDraggable(true);
+            layer.draw();
+        });
+        // add hover styling
+        anchor.on('mouseover', function() {
+			
+            var layer = this.getLayer();
+            document.body.style.cursor = 'pointer';
+            this.setStrokeWidth(4);
+			this.setRadius(4);
+            layer.draw();
+        });
+        anchor.on('mouseout', function() {
+            var layer = this.getLayer();
+            document.body.style.cursor = 'default';
+			
+			this.setStrokeWidth(1);
+			this.setRadius(1);
+            layer.draw();
+        });
+
+        group.add(anchor);
+    }
+
+collage = [];	
+
+function drawImage(inputImage)
+	{
+		// darth vader
+		var darthVaderImg = new Konva.Image({
+			image: inputImage,
+			name: inputImage.src,
+			width: inputImage.width/*200*/,
+			height: inputImage.height/*137*/
+		});
+		
+		var darthVaderGroup = new Konva.Group({
+			x: 180,
+			y: 50,
+			draggable: true
+		});
+		layer.add(darthVaderGroup);
+		darthVaderGroup.add(darthVaderImg);
+		addAnchor(darthVaderGroup, 0, 0, 'topLeft');
+		addAnchor(darthVaderGroup, darthVaderImg.width()/*200*/, 0, 'topRight');
+		addAnchor(darthVaderGroup, darthVaderImg.width()/*200*/, darthVaderImg.height()+1/*138*/, 'bottomRight');
+		addAnchor(darthVaderGroup, 0, /*138*/darthVaderImg.height()+1, 'bottomLeft');
+		
+		darthVaderGroup.on('mouseover', function() {
+            document.body.style.cursor = 'pointer';
+        });
+        darthVaderGroup.on('mouseout', function() {
+            document.body.style.cursor = 'default';
+        });
+		darthVaderImg.on('mousedown mouseup dragmove', function () {
+				darthVaderGroup = getPhotoSettings(darthVaderGroup);
+				layer.draw();});
+		
+		var img = new Image();
+		img.src = inputImage.src;
+		var src = inputImage.src;
+		collage[darthVaderGroup._id] = {
+			original: img,
+			x: darthVaderGroup.getAttr('x'),
+			y: darthVaderGroup.getAttr('y'),
+			width: darthVaderImg.getAttr('width'),
+			height: darthVaderImg.getAttr('height'),
+			degrees: darthVaderGroup.getAttr('rotation'),
+			z: darthVaderGroup.getZIndex(),
+			sepia: false,
+			desaturation: 0,
+			contrast: 0
+		};
+		
+		/*for (var i in collage)
+			console.log(i, collage[i]);*/
+		
+		layer.draw();
+	}
+	
+function getPhotoSettings(group) {
+	var photo = group.getChildren().toArray()[0];
+	var number = group._id;
+	console.log(collage[group._id].original.src);
+	$('#number').val(group._id);
+	$("#x").val(group.getAttr('x'));
+	$("#y").val(group.getAttr('y'));
+	$("#height").val(photo.getAttr('height'));
+	$("#width").val(photo.getAttr('width'));
+	$("#degrees").val(group.getAttr('rotation'));
+	$("#z").val(group.getZIndex());
+	$("sepia").prop('checked', collage[number].sepia);
+	$("#desaturation").val(collage[number].desaturation);
+	$("#contrast").val(collage[number].contrast);
+	
+	return group;
+}
+
+function setPhotoSettings(settings) {
+	var group = findGroup(settings.number.value);
+	var photo = group.getChildren().toArray()[0];
+	
+	var img = new Image();
+	img.src = collage[group._id].original.src;
+	//console.log(img.src);
+	
+	var options = {
+			onError: function() {
+				alert('ERROR');
+			}
+		};
+	var sepia;
+	if (settings.sepia.checked == true)
+		sepia = true;
+	else sepia = false;
+		
+	var effect = {
+		desaturate: settings.desaturation.value,
+		contrast: settings.contrast.value,
+		sepia: sepia
+	};
+	
+	
+	filters = new VintageJS(img, options, effect);
+	
+	photo.setImage(img);
+	
+	group.setAbsolutePosition({x: settings.x.value, y: settings.y.value});
+	group.rotation(settings.degrees.value);
+	group.setZIndex(settings.z.value);
+  
+	photo.setAttr('height', settings.height.value);
+	photo.setAttr('width', settings.width.value);
+	
+	var src = collage[group._id].original;
+	
+	collage[group._id].x = settings.x.value;
+	collage[group._id].y = settings.y.value;
+	collage[group._id].width = settings.width.value;
+	collage[group._id].height = settings.height.value;
+	collage[group._id].degrees = settings.degrees.value;
+	collage[group._id].z = settings.z.value;
+	collage[group._id].sepia = settings.sepia.value;
+	collage[group._id].desaturation = settings.desaturation.value;
+	collage[group._id].contrast = settings.contrast.value;
+	
+	layer.draw();
+	$('#container').trigger('click');
+}
+
+function findGroup (_id) {
+	var groups = layer.getChildren().toArray();
+	for (var i in groups) {
+		if (groups[i]._id == _id) {
+			return groups[i];
+		}
+	}
+}
+
+function removeGroup(groupNumber) {
+	var group = findGroup(groupNumber);
+	var photo = group.getChildren().toArray()[0];
+	
+	var img = new Image();
+	img.src = photo.getAttr('name');
+	//$('#results').append(img);
+	
+	$('#results').append('<li><a target="_blank" class = "thumbnail"><img id = "'+ id++ +'"src="'+img.src+'" draggable="true" ondragstart = "drag(this)"/></a></li>');
+	
+	group.destroy();
+	layer.draw();
+}
+
+function getFilters (photo) {
+	document.getElementById('new)collage').number.value = photo.id;
+}
+
+function disableSettings() {
+	
+	document.getElementById('x').disabled = true;
+	document.getElementById('y').disabled = true;
+	document.getElementById('width').disabled = true;
+	document.getElementById('height').disabled = true;
+	document.getElementById('degrees').disabled = true;
+	document.getElementById('z').disabled = true;
+	document.getElementById('sepia').disabled = true;
+	document.getElementById('desaturation').disabled = true;
+	document.getElementById('contrast').disabled = true;
+}
+
+function enableSettings() {
+	
+	document.getElementById('x').disabled = false;
+	document.getElementById('y').disabled = false;
+	document.getElementById('width').disabled = false;
+	document.getElementById('height').disabled = false;
+	document.getElementById('degrees').disabled = false;
+	document.getElementById('z').disabled = false;
+	document.getElementById('sepia').disabled = false;
+	document.getElementById('desaturation').disabled = false;
+	document.getElementById('contrast').disabled = false;
+}
+
+function send () {
+	
+	for (var i in collage)
+	{
+		var collagejson = JSON.stringify(collage[i]);
+		var src = collage[i].original;
+		
+		$.ajax({
+		type:		"POST",
+		url:		'http://127.0.0.1:3000/collages',
+		data:		{ src:  src.src, collage: collagejson},
+		success:	function () {
+						console.log("success");
+					},
+		error:		function() {
+						console.log("error");
+					}
+	});
+	}
+}
